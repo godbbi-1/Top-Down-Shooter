@@ -9,6 +9,8 @@ Unity와 node.js를 이용한 멀티플레이 탑다운 슈팅게임.
 2. 멀티플레이(협동)
 3. 랭킹
 
+#진행 과정
+
 # 패킷 구조
 
 ![image](https://github.com/user-attachments/assets/6e9b55a9-4aae-412a-9d8e-f38099446327)
