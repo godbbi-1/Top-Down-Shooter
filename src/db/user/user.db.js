@@ -1,34 +1,32 @@
 import pools from '../database.js';
-import { SQL_QUERIES } from './user.query.js';
-import bcrypt from "bcrypt";
+import { SQL_QUERIES } from './jser.query.js';
 
-// 유저 생성
-export const createUser = async (nickname, userId, userPassword) => {
-  try {
-    // 패스워드 암호화
-    const hashedPassword = await bcrypt.hash(userPassword, 10);
-
-    // SQL 쿼리 실행
-    await pools.USER_DB.query(SQL_QUERIES.CREATE_USER, [nickname, userId, hashedPassword]);
-    console.log("User created successfully!");
-  } catch (e) {
-    console.error("Error creating user:", e);
-    throw e; // 호출자에게 에러 전달
-  }
-};
-
-// 유저 확인
-export const findUserById = async (userId) => {
-  try {
-    // ID로 유저 검색
-    const [rows] = await pools.USER_DB.query(SQL_QUERIES.FIND_USER_BY_ID, [userId]);
-    if (rows.length === 0) {
-      console.log("User not found");
-      return null; // 유저가 없을 경우 null 반환
+// 중복된 ID 확인 함수
+export const checkDuplicateUsername = async (username) => {
+    const pool = pools.USER_DB;
+    try {
+        const [rows] = await pool.query(SQL_QUERIES.FIND_USER_BY_USERNAME, [username]);
+        return rows.length > 0; // 중복된 값이 있으면 true 반환
+    } catch (error) {
+        console.error('중복 확인 중 오류 발생:', error);
+        throw error;
     }
-    return rows[0];
-  } catch (e) {
-    console.error("Error finding user:", e);
-    throw e; // 호출자에게 에러 전달
-  }
 };
+
+// 회원가입 처리 함수
+export const handleUserRegistration = async (username, password, nickname) => {
+    const pool = pools.USER_DB;
+    try {
+        const [result] = await pool.query(SQL_QUERIES.CREATE_USER, [
+            username,
+            password,
+            nickname,
+        ]);
+        return { success: true, insertId: result.insertId };
+    } catch (error) {
+        console.error('회원가입 처리 중 오류 발생:', error);
+        return { success: false, error: error.message };
+    }
+};
+
+// 다른 필요한 함수들 추가 가능
