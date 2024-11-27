@@ -1,4 +1,5 @@
-import { findUserByUsername, checkDuplicateUsername, handleUserRegistration } from '../db/user/user.db.js';
+import { handleRegister } from '../handlers/user/registerHandler.js';
+import { handleLogin } from '../handlers/user/loginHandler.js';
 
 const onData = async (socket, data) => {
     const message = data.toString().trim();
@@ -6,42 +7,9 @@ const onData = async (socket, data) => {
 
     try {
         if (message.startsWith('REGISTER|')) {
-            // 회원가입 요청 처리
-            const [_, username, password, nickname] = message.split('|');
-
-            if (!username || !password || !nickname) {
-                socket.write('회원가입 실패: 유효하지 않은 데이터 형식');
-                return;
-            }
-
-            // 중복 확인
-            const isDuplicate = await checkDuplicateUsername(username);
-            if (isDuplicate) {
-                socket.write('회원가입 실패: 중복된 ID');
-                return;
-            }
-
-            const result = await handleUserRegistration(username, password, nickname);
-            if (result.success) {
-                socket.write('회원가입 성공');
-            } else {
-                socket.write(`회원가입 실패: ${result.error}`);
-            }
+            await handleRegister(socket, message.split('|'));
         } else if (message.startsWith('LOGIN|')) {
-            // 로그인 요청 처리
-            const [_, username, password] = message.split('|');
-
-            if (!username || !password) {
-                socket.write('로그인 실패: 유효하지 않은 데이터 형식');
-                return;
-            }
-
-            const user = await findUserByUsername(username);
-            if (user && user.password === password) {
-                socket.write('로그인 성공');
-            } else {
-                socket.write('로그인 실패: 잘못된 ID 또는 비밀번호');
-            }
+            await handleLogin(socket, message.split('|'));
         } else {
             socket.write('요청 실패: 알 수 없는 요청 유형');
         }
